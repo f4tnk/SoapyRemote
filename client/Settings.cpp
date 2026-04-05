@@ -18,15 +18,9 @@ SoapyRemoteDevice::SoapyRemoteDevice(const std::string &url, const SoapySDR::Kwa
     _logAcceptor(nullptr),
     _defaultStreamProt("udp")
 {
-    //extract timeout — "timeout" or "remote:timeout" both accepted.
-    //The SoapySDR device args convention uses "remote:timeout" for remote-specific args,
-    //but the original code only checked "timeout". UHD B210 init over USB takes ~28s
-    //(AD9361 CODEC + radio init + 2× loopback + clock), so the default 100ms is unusable
-    //and even the 30s default of SoapyRPCUnpacker is too short. Map "remote:timeout"
-    //to allow passing remote:timeout=120000000 (120s) in SATNOGS_SOAPY_RX_DEVICE.
+    //extract timeout
     long timeoutUs = SOAPY_REMOTE_SOCKET_TIMEOUT_US;
-    auto timeoutIt = args.find("timeout");
-    if (timeoutIt == args.end()) timeoutIt = args.find("remote:timeout");
+    const auto timeoutIt = args.find("timeout");
     if (timeoutIt != args.end()) timeoutUs = std::stol(timeoutIt->second);
 
     //try to connect to the remote server
@@ -39,12 +33,12 @@ SoapyRemoteDevice::SoapyRemoteDevice(const std::string &url, const SoapySDR::Kwa
     //connect the log acceptor
     _logAcceptor = new SoapyLogAcceptor(url, _sock, timeoutUs);
 
-    //acquire device instance — pass timeoutUs so UHD B210 slow init (~28s) does not time out
+    //acquire device instance
     SoapyRPCPacker packer(_sock);
     packer & SOAPY_REMOTE_MAKE;
     packer & args;
     packer();
-    SoapyRPCUnpacker unpacker(_sock, true, timeoutUs);
+    SoapyRPCUnpacker unpacker(_sock);
 
     //default stream protocol specified in device args
     const auto protIt = args.find("prot");
