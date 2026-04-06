@@ -18,8 +18,8 @@ SoapyRemoteDevice::SoapyRemoteDevice(const std::string &url, const SoapySDR::Kwa
     _logAcceptor(nullptr),
     _defaultStreamProt("udp")
 {
-    //extract timeout
-    long timeoutUs = SOAPY_REMOTE_SOCKET_TIMEOUT_US;
+    //extract timeout — default 300s to allow slow FPGA loads (e.g. UHD B2xx over USB 2.0)
+    long timeoutUs = 300000000L;
     const auto timeoutIt = args.find("timeout");
     if (timeoutIt != args.end()) timeoutUs = std::stol(timeoutIt->second);
 
@@ -33,12 +33,12 @@ SoapyRemoteDevice::SoapyRemoteDevice(const std::string &url, const SoapySDR::Kwa
     //connect the log acceptor
     _logAcceptor = new SoapyLogAcceptor(url, _sock, timeoutUs);
 
-    //acquire device instance
+    //acquire device instance — use timeoutUs so slow FPGA loads don't cause TIMEOUT
     SoapyRPCPacker packer(_sock);
     packer & SOAPY_REMOTE_MAKE;
     packer & args;
     packer();
-    SoapyRPCUnpacker unpacker(_sock);
+    SoapyRPCUnpacker unpacker(_sock, true, timeoutUs);
 
     //default stream protocol specified in device args
     const auto protIt = args.find("prot");
