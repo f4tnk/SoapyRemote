@@ -1,0 +1,13 @@
+[Unit]
+Description=SoapyRemote network server
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+ExecStart=/usr/local/bin/SoapySDRServer --bind
+KillMode=process
+Restart=on-failure
+LimitRTPRIO=99
+
+[Install]
+WantedBy=multi-user.target

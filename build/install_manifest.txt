@@ -1,0 +1,5 @@
+/usr/local/lib/SoapySDR/modules0.8-3/libremoteSupport.so
+/usr/local/bin/SoapySDRServer
+/usr/local/share/man/man1/SoapySDRServer.1
+/usr/local/lib/systemd/system/SoapySDRServer.service
+/usr/local/lib/sysctl.d/10-SoapySDRServer.conf
